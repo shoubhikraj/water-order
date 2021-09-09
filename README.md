@@ -21,3 +21,7 @@ g++ -fexceptions -O3 -fopenmp -I./tclap-1.2.4/include -I/path/to/chemfiles/inclu
 This should also compile on other operating systems and/or other compilers, the only thing to make sure is that chemfiles is built with the same compiler, and that C++ exception handling is enabled.
 
 On Windows, there are multiple versions of C runtimes (static, dynamic, debug etc.). Make sure that chemfiles is build against the same runtime. For the release build of chemfiles, the dynamic multithreaded (/MD) runtime is linked to. When linking to the static chemfiles library, also use the /MD flag (you will get linker errors if you try otherwise). I am not sure what happens when linking to the dynamic chemfiles library, but the same runtime should be used to avoid unusual errors during runtime, even if the program compiles and links successfully.
+
+Please cite if you use this software.
+
+Feel free to open an issue if there are any problems.
