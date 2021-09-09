@@ -19,10 +19,10 @@
 #include <numeric>
 #include <omp.h>
 
-// when using MSVC++, include basetsd.h for SSIZE_T because OpenMP 2.0 does not support
-// unsigned index for OpenMP for loops.
-// Intel C++ also defined _MSC_VER on Windows but they support OpenMP > 4.0 so check 
-// for them explicitly. No need to use unsigned index
+// when using MSVC++, include basetsd.h for SSIZE_T because it's ancient OpenMP 2.0
+// does not support unsigned index for OpenMP for loops. Intel C++ also defines
+//  _MSC_VER on Windows but they support OpenMP > 4.0 so check for them explicitly.
+// In those compilers, there is no need to use unsigned index!!
 #if defined(_MSC_VER) && !defined(__INTEL_COMPILER) && !defined(__INTEL_LLVM_COMPILER)
  #include <basetsd.h>
  typedef SSIZE_T openmp_index_type;
@@ -51,6 +51,8 @@ constexpr double three_over_eight = 3.0 / 8.0;
 
 int main(int argc, char** argv)
 {
+    // ready cin for throwing exceptions at bad input (as we are already using try block)
+    cin.exceptions(std::ios_base::failbit);
 try {
     // For task arg, only two options are possible -> OTO for Tetrahedral order and d5 for d5 parameter
     const std::vector<string> task_allowed_args = { "OTO","d5" };
@@ -77,6 +79,8 @@ try {
     string out_file_name = out_file_input_arg.getValue(); // name of the file for output
     double hist_end; // rmax value (i.e. end of histogram ranges)
     double bin_size; // bin-width in Angs
+    
+
 
     // Check if no arguments are given
 
@@ -466,14 +470,18 @@ try {
         cout << "Radial distribution written to " << out_file_name_d5 << "\n";
     }
     
-} catch (const chemfiles::Error &e) {
-    cout << "\n" << "Error in chemfiles:" << e.what() << std::endl;
+} catch (const chemfiles::Error &chemex) {
+    cout << "\n" << "Error in chemfiles:" << chemex.what() << std::endl;
     exit(1);
-} catch (TCLAP::ArgException &f) {
-    cout << "\n" << "Error in TCLAP:" << f.error() << "for arg " << f.argId() << std::endl;
+} catch (TCLAP::ArgException &tclex) {
+    cout << "\n" << "Error in TCLAP:" << tclex.error() << "for arg " << tclex.argId() << std::endl;
+    exit(1);
+} catch (std::ios_base::failure &ioex) {
+    cout << "\n" << "Error in keyboard input:" << ioex.what() << "\n";
+    cout << "Please check that input data is of correct type!"<< std::endl;
     exit(1);
 } catch (...) {
-    cout << "\n" << "Other exception caught";
+    cout << "\n" << "Other exception caught" << std::endl;
     exit(1);
 }
     return 0;
