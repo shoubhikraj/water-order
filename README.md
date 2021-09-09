@@ -11,11 +11,11 @@ How to compile:
 
 On Windows (MSVC++)
 ```
-cl /EHSc /O2 /MD /fp:fast /openmp /I.\tclap-1.2.4\include -IC:\path\to\chemfiles\include water_order.cpp /link C:\path\to\chemfiles.lib
+cl /EHSc /O2 /MD /fp:fast /openmp /I.\tclap-1.2.4\include -IC:\path\to\chemfiles\include Water_order.cpp /link C:\path\to\chemfiles.lib
 ```
 On Linux (GCC)
 ```
-g++ -fexceptions -O3 -fopenmp -I./tclap-1.2.4/include -I/path/to/chemfiles/include/ water_order.cpp -lchemfiles -L/path/to/chemfiles.lib
+g++ -fexceptions -O3 -fopenmp -I./tclap-1.2.4/include -I/path/to/chemfiles/include/ Water_order.cpp -lchemfiles -L/path/to/chemfiles.lib
 ```
 
 This should also compile on other operating systems and/or other compilers, the only thing to make sure is that chemfiles is built with the same compiler, and that C++ exception handling is enabled.
