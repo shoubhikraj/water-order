@@ -65,6 +65,12 @@ This message is printed by running `Water_order -h`. For the -f argument, any tr
 
 If the program is run without command line arguments, or some required command line arguments are missing, it will prompt for keyboard input automatically.
 
+Example usage:
+```
+Water_order -f trajectory.dcd -s input.pdb -c OH2 -t d5 --rmax 20 --bin-width 0.5
+```
+This calculates the radial distribution of d5 parameter of trajectory.dcd in the distance of 20 Angstroms from the centre of mass of droplet. The d5 values are averaged in ranges of 0.5 Angstroms.
+
 ## Current issues
 1) If you attempt to run Water_order on a large DCD file (from NAMD, CHARMM or LAMMPS) it will run out of memory. This is due to a problem in the VMD molfile plugin, which is used by chemfiles for reading DCD files. VMD molfile reads the whole trajectory into memory. (This is mentioned in chemfiles issues [here](https://github.com/chemfiles/chemfiles/issues/421) and [here](https://github.com/chemfiles/chemfiles/issues/370).)
 2) Currently chemfiles does not support psf files. So, to obtain the masses of atoms, masses are inferred from atom names in the pdb file. This means only VMD generated pdb files are supported right now. This should be fixed within a few months. (Atom names OH2 = Water O; H1, H2 = Water H; CAL = Ca2+; FLU = F-)
