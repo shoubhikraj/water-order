@@ -66,7 +66,7 @@ This message is printed by running `Water_order -h`. For the -f argument, any tr
 If the program is run without command line arguments, or some required command line arguments are missing, it will prompt for keyboard input automatically.
 
 Example usage:
-```
+```Shell
 Water_order -f trajectory.dcd -s topology.psf -c OH2 -t d5 --rmax 20 --bin-width 0.5
 ```
 This calculates the radial distribution of d5 parameter of trajectory.dcd in the distance of 20 Angstroms from the centre of mass of droplet. The d5 values are averaged in ranges of 0.5 Angstroms. The topology file **must** be a psf file.
@@ -79,11 +79,11 @@ This calculates the radial distribution of d5 parameter of trajectory.dcd in the
 2) Compile water_order.cpp and link to chemfiles library (static or dynamic—both works)
 
 On Windows (MSVC++)
-```
+```Batchfile
 cl /EHSc /Fe:Water_order /O2 /MD /fp:fast /openmp /I.\tclap-1.2.4\include -IC:\path\to\chemfiles\include psfreader_stub.cpp Water_order.cpp /link C:\path\to\chemfiles.lib
 ```
 On Linux (GCC)
-```
+```Shell
 g++ -fexceptions -o Water_order -O3 -fopenmp -I./tclap-1.2.4/include -I/path/to/chemfiles/include/ psfreader_stub.cpp Water_order.cpp -lchemfiles -L/path/to/chemfiles.a
 ```
 
