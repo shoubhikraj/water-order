@@ -1,5 +1,5 @@
 # Water-order
-This software calculates the radial distribution of tetrahedral order parameter and the d5 parameters for droplets. Mainly aimed for molecular dynamics simulations of water droplets with various molecules/ions in it. Assumes that there is no periodic boundary condition.
+This software calculates the radial distribution of oriental tetrahedral order parameter (q<sub>T</sub>) and the fifth nearest neighbour (d<sub>5</sub>) parameters for droplets. Mainly aimed for molecular dynamics simulations of water droplets with various molecules/ions in it. Assumes that there is no periodic boundary condition.
 
 It calculates the order parameter/d5 parameter for each oxygen, then takes the average of all oxygens in a certain distance range (`--bin-width`) from the centre-of-mass of the droplet, to get the radial distribution. For a trajectory, the distributions are also averaged over the whole trajectory.
 
