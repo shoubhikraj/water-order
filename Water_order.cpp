@@ -68,7 +68,7 @@ try {
     TCLAP::ValueArg<string> out_file_input_arg("o", "output-file", "Base name of output file; default is \'Water_order\'", false, "Water_order", "string", cmdparser);
     TCLAP::ValueArg<string> task_input_arg("t", "task", "Task requested to run: OTO = Oriental Tetrahedral Order, d5 = d5 parameter; default is OTO", false, "OTO", &allowed_args_constr, cmdparser);
     TCLAP::ValueArg<string> o_name_input_arg("c", "oxygen-name", "Name of oxgyen atoms in the atom-info file", false, "NULL", "string", cmdparser);
-    TCLAP::ValueArg<string> atinfo_input_arg("s", "atom-info", "Name of the file containing the atom names", false, "NULL", "string", cmdparser);
+    TCLAP::ValueArg<string> atinfo_input_arg("s", "atom-info", "Name of the file containing the atom information (topology)", false, "NULL", "string", cmdparser);
     TCLAP::ValueArg<string> trj_input_arg("f", "trajectory", "Name of the trajectory file", false, "NULL", "string", cmdparser);
     cmdparser.parse(argc, argv);
 
@@ -112,12 +112,12 @@ try {
     }
 
     if (atinfo_input_arg.getValue() == "NULL") {
-        cout << "Enter the name of file containing the atom information (i.e. .pdb, .gro etc.): ";
+        cout << "Enter the name of file containing the atom information (i.e. .psf etc.): ";
         cin >> atinfo_file_name;
     }
     else {
         atinfo_file_name = atinfo_input_arg.getValue();
-        cout << "Atom information file name read from command line: " << atinfo_file_name << "\n";
+        cout << "Atom information (topology) file name read from command line: " << atinfo_file_name << "\n";
     }
 
     if (trj_input_arg.getValue() == "NULL") {
@@ -169,7 +169,7 @@ try {
         exit(1);
     }
     else {
-        cout << "  done\n";
+        cout << "...  done\n";
     }
 
     // now get the atoms selected by sel_string and handle any errors
