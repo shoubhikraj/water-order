@@ -15,6 +15,8 @@
 #include <tclap/CmdLine.h>
 #include <cmath>
 #include <fstream>
+#include <utility>
+#include <tuple>
 #include <iomanip>
 #include <numeric>
 #include <omp.h>
@@ -34,7 +36,7 @@ using std::cout;
 using std::string;
 using std::cin;
 
-
+std::vector<std::tuple<string, double>> read_PSF(string infile_name);
 std::array<size_t, 4> get_nearest_four_ind(const std::vector<double>& dist_list, size_t dist_list_size, size_t centre);
 double get_nearest_fifth_dist(const std::vector<double>& dist_list,size_t dist_list_size, size_t centre);
 bool file_exists(const string& str);
@@ -145,9 +147,11 @@ try {
 
     /* In this part, we read in the pdb or gro (or anything else) file that will
     give the names of atoms. This is crucial to detect the oxygen atoms */
+
     cout << "\n";
-    cout << "Attempting to read the atom information file...";
-    chemfiles::Trajectory atinfo(atinfo_file_name);
+    cout << "Attempting to read the atom information file...\n"; // replace chemfiles with own code
+    
+    /* chemfiles::Trajectory atinfo(atinfo_file_name);
     chemfiles::Frame atinfo_frame = atinfo.read();
     if (atinfo_frame[0].name().empty()) {
         cout << "\n" << "Unable to read atom names from atom information file!" << "\n";
@@ -157,19 +161,35 @@ try {
     }
     else {
         cout << "  done" << "\n";
+    } */
+
+    const std::vector<std::tuple<string, double>> ATOM_data = read_PSF(atinfo_file_name); // holds names and masses
+    if (ATOM_data.size() == 0) {
+        cout << "Unable to read atom names from atom information file!\n";
+        exit(1);
+    }
+    else {
+        cout << "  done\n";
     }
 
     // now get the atoms selected by sel_string and handle any errors
     cout << "Parsing selection string...";
 
-    string sel_string_fin = "name " + sel_string;
+    /* string sel_string_fin = "name " + sel_string;
     auto select_oxy = chemfiles::Selection(sel_string_fin);
     std::vector<size_t> oxy_matches = select_oxy.list(atinfo_frame); // vector contains indices of oxgyen atoms
-    const auto oxy_size = oxy_matches.size(); // total number of oxygen atoms found
+    const auto oxy_size = oxy_matches.size(); // total number of oxygen atoms found */
+    std::vector <size_t> oxy_matches;
+    for (size_t k = 0; k < ATOM_data.size(); ++k) {
+        if (std::get<0>(ATOM_data.at(k))=="OH2") {
+            oxy_matches.push_back(k);
+        }
+    }
+    const auto oxy_size = oxy_matches.size();
 
     // if there are less than 4 O's then exit
     if (oxy_size < 5) {
-        cout << "\n" << "There are 4 or less oxygen atoms (" << sel_string_fin << ") in the system" << "\n";
+        cout << "\n" << "There are 4 or less oxygen atoms (" << sel_string << ") in the system" << "\n";
         cout << "Tetrahedral order parameter can only be determined for >=5 oxygen atoms" << "\n";
         cout << "Exiting";
         exit(1);
@@ -197,11 +217,11 @@ try {
     // Testframe here!!
     trj.set_cell(chemfiles::UnitCell()); // ChemFiles has a problem with dcd files, set unit cell to no unit cell
         auto testframe = trj.read(); // for testing only!!
-    if (testframe.size() == atinfo_frame.size()) {
+    if (testframe.size() == ATOM_data.size()) {
         cout << "  done" << "\n";
     }
     else {
-        cout << "\n" << "Number of atoms in the atom information file (" << atinfo_frame.size();
+        cout << "\n" << "Number of atoms in the atom information file (" << ATOM_data.size();
         cout << ") does not match the number of atoms in trajectory (" << trj.read().size() << ") !\n";
         cout << "Please check the input files again.\n";
         cout << "Exiting" << std::endl;
@@ -238,34 +258,13 @@ try {
     cout << "Calculation will start from frame " << start_step << " and will end at frame " << end_step-1 << "\n";
 
 
-
+    
     // make a list of masses
-    // hacky code! relies on VMD using consistent names. PDB generated from other source
-    // will not work
-    auto natoms = atinfo_frame.size();
+    // 
+    auto natoms = ATOM_data.size();
     std::vector<double> mass_list(natoms);
-    for (size_t x = 0; x < natoms; ++x) {
-        auto atom_name_tmp = atinfo_frame[x].name();
-        if (atom_name_tmp == "OH2") {
-            mass_list[x] = 15.9994;
-        }
-        else if (atom_name_tmp == "OM") {
-            mass_list[x] = 0.0000;
-        }
-        else if (atom_name_tmp == "H1" || atom_name_tmp == "H2") {
-            mass_list[x] = 1.0080;
-        }
-        else if (atom_name_tmp == "CAL") { 
-            mass_list[x] = 40.0800;
-        }
-        else if (atom_name_tmp == "FLU") {
-            mass_list[x] = 18.9984;
-        }
-        else {
-            cout << "Unidentified atom, Exiting";
-            cout << "Note that right now, this code can only identify VMD atom names - OH2, OM, H1, H2.";
-            exit(1);
-        }
+    for (size_t k = 0; k < natoms; ++k) {
+        mass_list.at(k) = std::get<1>(ATOM_data.at(k));
     }
     const double total_mass = std::accumulate(mass_list.begin(),mass_list.end(),0.0);
 
@@ -309,6 +308,7 @@ try {
         if (!outfile_oto) {
             cout << "File could not be opened!" << "\n";
             cout << "Exiting" << std::endl;
+            exit(1);
         }
         outfile_oto << std::fixed << std::showpoint; // fixed form and always output with decimal point
         outfile_oto << std::setprecision(6); // set 6 decimal points for float output
