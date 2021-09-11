@@ -3,7 +3,7 @@ This software calculates the tetrahedral order parameter and the d5 parameters f
 
 Depends on the chemfiles library: https://github.com/chemfiles/chemfiles/ and TCLAP library http://tclap.sourceforge.net/ (v1.2.4 already included in this repository).
 
-Compiles successfully on Windows with MSVC++ 2019, on Linux with GCC 10, and it should also compile on Mac OS (Instructions for compiling below).
+Compiles successfully on Windows with MSVC++ 2019, on Linux with GCC 10, and it should also compile on Mac OS (Instructions for compiling are provided below).
 
 ## How to run
 The executable can be run with command line arguments (also without):
