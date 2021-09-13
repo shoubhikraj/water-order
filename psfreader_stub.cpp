@@ -20,16 +20,24 @@ using std::getline;
 using std::string;
 
 bool read_header(const string& line, std::map<string,bool>& properties);
-bool read_ATOM_field(std::ifstream& infile,size_t start_line,std::vector<std::tuple<unsigned long long,string,string,string,string,string,double,double,int,double,double> >& data,const std::map<string, bool>& header_properties);
+bool read_ATOM_field(std::ifstream& infile,size_t start_line,std::vector<std::tuple<unsigned long long,string,string,string,string,string,double,double,int,double,double> >& data,const std::map<string, bool>& header_properties, bool& unknown_fmt);
 bool read_ATOM_line_NAMD(const string& line, std::vector<std::tuple<unsigned long long,string,string,string,string,string,double,double,int,double,double> >& data,bool is_cheq);
+bool read_ATOM_line_XPLOR(const string& line, std::vector<std::tuple<unsigned long long,string,string,string,string,string,double,double,int,double,double> >& data,bool is_cheq,bool is_ext);
 bool read_ATOM_line_CHARMM(const string& line, std::vector<std::tuple<unsigned long long,string,string,string,string,string,double,double,int,double,double> >& data,bool is_cheq,bool is_ext);
 string string_trim_and_check(string s);
+bool read_BOND_field(std::ifstream& infile, size_t start_line, std::vector<std::array<size_t,2>>& data);
+bool read_THETA_field(std::ifstream& infile, size_t start_line, std::vector<std::array<size_t,3>>& data);
+bool read_PHI_IMPHI_field(std::ifstream& infile,size_t start_line,std::vector<std::array<size_t,4>>& data,const string& dihed_type);
+std::vector<std::tuple<string,double>> read_PSF(string infile_name);
+
+
 
 std::vector<std::tuple<string,double>> read_PSF(string infile_name) {
-    
+    std::vector<std::tuple<string,double>> return_dat;
     string line;
     size_t counter = 0; // stores the line number
-    std::map<string, bool> header_properties = {{"CMAP",false}, {"EXT",false}, {"XPLOR",false}, {"CHEQ",false}, {"NAMD",false}};
+    std::map<string, bool> header_properties = {{"CMAP",false}, {"EXT",false}, {"XPLOR",false}, {"CHEQ",false}, {"NAMD",false}, {"CHARMM",false}};
+    // CHARMM does not appear in header, only for use in this program
     bool got_header=false;
     std::map<string, bool> is_present_field = {
         {"NATOM",false}, {"NBOND",false}, {"NTHETA",false}, {"NPHI",false}, {"NIMPHI",false}, {"NCRTERM",false}, {"NDON",false}, {"NACC",false}, {"NNB",false}, {"NGRP",false}, {"NUMLP",false},{"MOLNT",false}
@@ -37,6 +45,7 @@ std::vector<std::tuple<string,double>> read_PSF(string infile_name) {
     std::map<string, size_t> field_line_num;
     // open input file
     std::ifstream input_file;
+    input_file.exceptions(std::ifstream::badbit);
     
     input_file.open(infile_name.c_str());
     if (!input_file.is_open()) {
@@ -59,35 +68,282 @@ std::vector<std::tuple<string,double>> read_PSF(string infile_name) {
             }
         }
     }
+    bool psf_read_success = false;
     // ATOM field:
     // atID,segName,resID,resName,atName,atType,charge,mass,selection,*polarizability,TholeScaleFactor
     // II,LSEGID,LRESID,LRES,TYPE(I),IAC(I),CG(I),AMASS(I),IMOVE(I),ECH(I),ECA(I)
     // int, str,   str, str,  str,    str,  float,  float,   int,   float, float
-    std::vector<std::tuple<unsigned long long,string,string,string,string,string,double,double,int,double,double> > ATOM_data;
+    std::vector<std::tuple<unsigned long long,string,string,string,string,string,double,double,int,double,double>> ATOM_data;
     if (is_present_field.at("NATOM")) {
-        auto is_atom_read = read_ATOM_field(input_file,field_line_num.at("NATOM"),ATOM_data,header_properties);
+        bool is_unknown_fmt_err = false;
+        bool is_atom_read = read_ATOM_field(input_file,field_line_num.at("NATOM"),ATOM_data,header_properties,is_unknown_fmt_err);
+        if (is_unknown_fmt_err) {
+            header_properties.at("XPLOR") = true; // first try XPLOR
+            is_atom_read = read_ATOM_field(input_file,field_line_num.at("NATOM"),ATOM_data,header_properties,is_unknown_fmt_err);
+            if (!is_atom_read) {
+                header_properties.at("XPLOR") = false;
+                header_properties.at("CHARMM") = true; // then old CHARMM
+                is_atom_read = read_ATOM_field(input_file,field_line_num.at("NATOM"),ATOM_data,header_properties,is_unknown_fmt_err);
+                if (!is_atom_read) {
+                    cout << "psf-reader> Warning! last attempt to read file as NAMD formatted PSF\n";
+                    header_properties.at("NAMD") = true; // then NAMD
+                    is_unknown_fmt_err = false; // give up if fails
+                    is_atom_read = read_ATOM_field(input_file,field_line_num.at("NATOM"),ATOM_data,header_properties,is_unknown_fmt_err);
+                    if (is_atom_read) {
+                        cout << "psf-reader> Successfully read ATOM field in NAMD space separated format\n";
+                    }
+                }
+                else {
+                    cout << "psf-reader> Successfully read ATOM field in old CHARMM format\n";
+                }
+            }
+            else {
+                cout << "psf-reader> Successfully read ATOM field in XPLOR format\n";
+            }
+        }
+
         if (is_atom_read) {
-            std::vector<std::tuple<string,double>> return_dat;
+            // do something
             for (auto& x : ATOM_data) {
                 return_dat.push_back(std::make_tuple(std::get<4>(x), std::get<7>(x)));
             }
-            return return_dat;
+            psf_read_success = true; // NATOMS must be present in psf!!
+        }
+ 
+    }
+    // BOND field: space separated
+    std::vector<std::array<size_t,2>> BOND_data;
+    if (is_present_field.at("NBOND")) {
+        auto is_bond_read = read_BOND_field(input_file,field_line_num.at("NBOND"),
+        BOND_data);
+        if (is_bond_read) {
+            // do something
+        }
+        else {
+            psf_read_success = false;
+        }
+    }
+    // THETA field: space separated (angles)
+    std::vector<std::array<size_t,3>> THETA_data;
+    if (is_present_field.at("NTHETA")) {
+        auto is_theta_read = read_THETA_field(input_file,field_line_num.at("NTHETA"),THETA_data);
+        if (is_theta_read) {
+            // do something
+        }
+        else {
+            psf_read_success = false;
+        }
+
+    }
+    // PHI field: space separated (proper dihedrals)
+    std::vector <std::array<size_t,4>> PHI_data;
+    if (is_present_field.at("NPHI")) {
+        auto is_phi_read = read_PHI_IMPHI_field(input_file,field_line_num.at("NPHI"),PHI_data,"NPHI");
+        if (is_phi_read) {
+            // do something
+        }
+        else {
+            psf_read_success = false;
+        }
+    }
+    // IMPHI field: space separated (improper dihedrals)
+    std::vector <std::array<size_t,4>> IMPHI_data;
+    if (is_present_field.at("NIMPHI")) {
+        auto is_imphi_read = read_PHI_IMPHI_field(input_file,field_line_num.at("NIMPHI"),IMPHI_data,"NIMPHI");
+        if (is_imphi_read) {
+            // do something
+        }
+        else {
+            psf_read_success = false;
+        }
+    }
+
+    input_file.close();
+    //return psf_read_success;
+    return return_dat;
+}
+
+bool read_PHI_IMPHI_field(std::ifstream& infile,size_t start_line,std::vector<std::array<size_t,4>>& data,const string& dihed_type) {
+    infile.clear();
+    infile.seekg(0);
+    
+    size_t counter = 0;
+    string line;
+    while(getline(infile,line)) {
+        counter++;
+        if (counter >= start_line) {
+            break; // goto line containing NPHI/NIMPHI
         }
     }
     
-    if (input_file.bad()) {
-        perror(("Error while reading file "+infile_name+"\n").c_str()); // replace with error handling
+    size_t ndiheds;
+    if (line.find("!") != string::npos) {
+        auto ndiheds_str = line.substr(0,line.find("!"));
+        ndiheds = std::stoull(ndiheds_str); // have to handle exceptions cerr
+    }
+    else {
+        cerr << "Error in reading number of dihedrals/impropers\n";
         exit(1);
     }
-    input_file.close();
+    //size_t counter_old = counter;
+    std::array<size_t,4> dihed1, dihed2; // holds the two dihedrals for each line
+    while(getline(infile,line)) {
+        counter++;
+        if (line.empty()) {
+            break;
+        }
+        if (data.size() == ndiheds) {
+            break;
+        }
+        try {
+            std::istringstream iss(line);
+            iss.exceptions(std::ios::failbit|std::ios::badbit);
+            // 2 dihedrals in one line
+            size_t atom1, atom2, atom3, atom4, atom5, atom6, atom7, atom8;
+            iss >> atom1 >> atom2 >> atom3 >> atom4 ;
+            dihed1 = {{atom1,atom2,atom3,atom4}};
+            data.push_back(dihed1); // put into data vector
+            iss >> atom5 >> atom6 >> atom7 >> atom8;
+            dihed2 = {{atom5,atom6,atom7,atom8}};
+            data.push_back(dihed2);
+        }
+        catch (std::ios::failure& issfail) {
+            break;
+        }
+    }
+    if (data.size() != ndiheds) {
+    cerr << "psf-reader> Unable to read " << ndiheds << " dihedrals/impropers as declared before " << "!" << dihed_type << "\n";
+    cerr << "psf-reader> Error in line number " << counter<<"\n";
+    return false;
+    }
+    return true;
+}
+
+bool read_THETA_field(std::ifstream& infile, size_t start_line, std::vector<std::array<size_t,3>>& data) {
+    infile.clear();
+    infile.seekg(0);
+    
+    size_t counter = 0;
+    string line;
+    while(getline(infile,line)) {
+        counter++;
+        if (counter >= start_line) {
+            break; // goto line containing NTHETA
+        }
+    }
+    
+    size_t nangles;
+    if (line.find("!") != string::npos) {
+        auto nangles_str = line.substr(0,line.find("!"));
+        nangles = std::stoull(nangles_str); // have to handle exceptions cerr
+    }
+    else {
+        cerr << "Error in reading number of angles\n";
+        exit(1);
+    }
+    //size_t counter_old = counter;
+    std::array<size_t,3> angle1, angle2, angle3;
+    while(getline(infile,line)) {
+        counter++;
+        if (line.empty()) {
+            break;
+        }
+        if (data.size() == nangles) {
+            break;
+        }
+        try {
+            std::istringstream iss(line);
+            iss.exceptions(std::ios::failbit|std::ios::badbit);
+            // 3 bonds in one line
+            size_t atom1, atom2, atom3, atom4, atom5, atom6, atom7, atom8,atom9;
+            iss >> atom1 >> atom2 >> atom3;
+            angle1 = {{atom1,atom2,atom3}};
+            data.push_back(angle1); // put into data vector
+            iss >> atom4 >> atom5 >> atom6;
+            angle2 = {{atom4,atom5,atom6}};
+            data.push_back(angle2);
+            iss >> atom7 >> atom8 >> atom9;
+            angle3 = {{atom7,atom8,atom9}};
+            data.push_back(angle3);            
+        }
+        catch (std::ios::failure& issfail) {
+            break;
+        }
+    }
+    if (data.size() != nangles) {
+    cerr << "psf-reader> Unable to read " << nangles << " angles as declared before !NTHETA\n";
+    cerr << "psf-reader> Error in line number " << counter<<"\n";
+    return false;
+    }
+    return true;
+}
+
+/* This section reads the !NBOND section */
+bool read_BOND_field(std::ifstream& infile, size_t start_line, std::vector<std::array<size_t,2>>& data) {
+    // rewind ifstream
+    infile.clear();
+    infile.seekg(0);
+    
+    size_t counter = 0;
+    string line;
+    while(getline(infile,line)) {
+        counter++;
+        if (counter >= start_line) {
+            break; // goto line containing NBOND
+        }
+    }
+    
+    size_t nbonds;
+    if (line.find("!") != string::npos) {
+        auto nbonds_str = line.substr(0,line.find("!"));
+        nbonds = std::stoull(nbonds_str); // have to handle exceptions cerr
+    }
+    else {
+        cerr << "Error in reading number of bonds\n";
+        exit(1);
+    }
+    size_t counter_old = counter;
+    std::array<size_t,2> bond1, bond2, bond3,bond4;
+    while(getline(infile,line)) {
+        counter++;
+        try {
+            std::istringstream iss(line);
+            iss.exceptions(std::ios::failbit|std::ios::badbit);
+            // Four pairs of atom indices in one line
+            size_t atom1, atom2, atom3, atom4, atom5, atom6, atom7, atom8;
+            iss >> atom1 >> atom2;
+            bond1 = {{atom1,atom2}};
+            data.push_back(bond1); // put into data vector
+            iss >> atom3 >> atom4;
+            bond2 = {{atom3,atom4}};
+            data.push_back(bond2);
+            iss >> atom5 >> atom6;
+            bond3 = {{atom5,atom6}};
+            data.push_back(bond3);
+            iss >> atom7 >> atom8;
+            bond4 = {{atom7,atom8}};
+            data.push_back(bond4);
+        }
+        catch (std::ios::failure& issfail) {
+            break;
+        }
+        if ((counter - counter_old) == nbonds) {
+            break;
+        }
+    }
+    if (data.size() != nbonds) {
+    cerr << "psf-reader> Unable to read " << nbonds << " bonds as declared before !NBONDS\n";
+    cerr << "psf-reader> Error in line number " << counter<<"\n";
+    return false;
+    }
+    return true;
     
 }
 
 
 
-
-/* This section reads the !NATOMS section of the psf */
-bool read_ATOM_field(std::ifstream& infile,size_t start_line,std::vector<std::tuple<unsigned long long,string,string,string,string,string,double,double,int,double,double> >& data,const std::map<string, bool>& header_properties) {
+/* This section reads the !NATOM section of the psf */
+bool read_ATOM_field(std::ifstream& infile,size_t start_line,std::vector<std::tuple<unsigned long long,string,string,string,string,string,double,double,int,double,double> >& data,const std::map<string, bool>& header_properties,bool& unknown_fmt) {
     // rewind ifstream
     infile.clear();
     infile.seekg(0);
@@ -104,7 +360,7 @@ bool read_ATOM_field(std::ifstream& infile,size_t start_line,std::vector<std::tu
     size_t natoms;
     if (line.find("!") != string::npos) {
         auto natoms_str = line.substr(0,line.find("!"));
-        natoms = stoll(natoms_str); // have to handle exceptions cerr
+        natoms = std::stoull(natoms_str); // have to handle exceptions cerr
     }
     else {
         cerr << "Error in reading number of atoms\n";
@@ -115,8 +371,13 @@ bool read_ATOM_field(std::ifstream& infile,size_t start_line,std::vector<std::tu
     bool is_cheq = header_properties.at("CHEQ");
     bool is_ext = header_properties.at("EXT");
     bool is_namd = header_properties.at("NAMD");
+    bool is_xplor = header_properties.at("XPLOR");
+    bool is_charmm = header_properties.at("CHARMM");
     // read until all atoms are obtained
     bool success;
+    // CHARMM writes XPLOR to the header, but VMD does not even though it is XPLOR
+    // formatted. So, we first check the header. If XPLOR or NAMD is not written, then
+    // we first try XPLOR formatted read, then CHARMM, then NAMD
     if (is_namd) {
         while(getline(infile,line)) {
             counter++;
@@ -129,13 +390,36 @@ bool read_ATOM_field(std::ifstream& infile,size_t start_line,std::vector<std::tu
             }
         }
         if (data.size() != natoms) {
-            cerr << "psf-reader> Unable to read " << natoms << " atoms as declared before !NATOMS\n";
-            cerr << "psf-reader> Error in line number " << counter<<"\n";
+            if (!unknown_fmt) {
+                cerr << "psf-reader> Unable to read " << natoms << " atoms as declared before !NATOMS\n";
+                cerr << "psf-reader> Error in line number " << counter<<"\n";
+            }
             return false;
         }
         return true;
     }
-    else {
+    else if(is_xplor) {
+        while(getline(infile,line)) {
+            counter++;
+            success = read_ATOM_line_XPLOR(line,data,is_cheq,is_ext);
+            // throws invalid_argument exception from substr => caught
+            if (!success) {
+                break;
+            }
+            if ((counter - counter_old) == natoms) {
+                break;
+            }
+        }
+        if (data.size() != natoms) {
+            if (!unknown_fmt) {
+                cerr << "psf-reader> Unable to read " << natoms << " atoms as declared before !NATOMS\n";
+                cerr << "psf-reader> Error in line number " << counter <<"\n";
+            }
+            return false;
+        }
+        return true;
+    }
+    else if(is_charmm) { 
         while(getline(infile,line)) {
             counter++;
             success = read_ATOM_line_CHARMM(line,data,is_cheq,is_ext);
@@ -148,11 +432,17 @@ bool read_ATOM_field(std::ifstream& infile,size_t start_line,std::vector<std::tu
             }
         }
         if (data.size() != natoms) {
-            cerr << "psf-reader> Unable to read " << natoms << " atoms as declared before !NATOMS\n";
-            cerr << "psf-reader> Error in line number " << counter <<"\n";
+            if (!unknown_fmt) {
+                cerr << "psf-reader> Unable to read " << natoms << " atoms as declared before !NATOMS\n";
+                cerr << "psf-reader> Error in line number " << counter <<"\n";
+            }
             return false;
         }
         return true;
+    }
+    else { // unknown format
+        unknown_fmt = true;
+        return false;
     }
 }
 
@@ -174,7 +464,7 @@ bool read_ATOM_line_NAMD(const string& line, std::vector<std::tuple<unsigned lon
         ECA = 0.0;
     }
     std::istringstream iss(line);
-    iss.exceptions(std::ios::failbit);
+    iss.exceptions(std::ios::failbit|std::ios::badbit);
     try {
         if (is_cheq) {
             iss >> atID >> segName >> resID >> resName >> atomName >> atomType >> charge >> mass >> move >> ECH >> ECA;
@@ -189,9 +479,73 @@ bool read_ATOM_line_NAMD(const string& line, std::vector<std::tuple<unsigned lon
     data.push_back(std::make_tuple(atID,segName,resID,resName,atomName,atomType,charge,mass,move,ECH,ECA));
     return true;
 }
+/* Reads XPLOR formatted PSF files. This is the default for NAMD and for the newer
+versions of CHARMM */
+bool read_ATOM_line_XPLOR(const string& line, std::vector<std::tuple<unsigned long long,string,string,string,string,string,double,double,int,double,double> >& data,bool is_cheq,bool is_ext) {
+        if (line.empty()) return false;
+    // atID,segName,resID,resName,atName,atType,charge,mass,selection,*polarizability,TholeScaleFactor
+    // II,LSEGID,LRESID,LRES,TYPE(I),IAC(I),CG(I),AMASS(I),IMOVE(I),ECH(I),ECA(I)
+    // int, str,   str, str,  str,    str,  float,  float,   int,   float, float
+    // (I10,1X,A8,1X,A8,1X,A8,1X,A8,1X,A6,1X,2G14.6,I8,2G14.6) for EXT
+    //                                !!! 
+    // (I8,1X,A4,1X,A4,1X,A4,1X,A4,1X,A4,1X,2G14.6,I8,2G14.6) for standard
+    unsigned long long atID;
+    string segName;
+    string resID;
+    string resName;
+    string atomName;
+    string atomType;
+    double charge;
+    double mass;
+    int move; 
+    double ECH;
+    double ECA;
+    if (!is_cheq) {
+        ECH = 0.0;
+        ECA = 0.0;
+    }
+    try {
+        if (is_ext) {
+            atID = std::stoull(string_trim_and_check(line.substr(0,10))); // I10
+            segName = string_trim_and_check(line.substr(11,8)); // 1X,A8
+            resID = string_trim_and_check(line.substr(20,8)); // 1X,A8
+            resName = string_trim_and_check(line.substr(29,8)); // 1X,A8
+            atomName = string_trim_and_check(line.substr(38,8)); // 1X,A8
+            atomType = string_trim_and_check(line.substr(47,6)); // 1X,A6
+            charge = std::stod(string_trim_and_check(line.substr(54,14))); // 1X,G14.6
+            mass = std::stod(string_trim_and_check(line.substr(68,14))); // G14.6
+            move = std::stoi(string_trim_and_check(line.substr(82,8))); //I8
+            if (is_cheq) {
+                ECH = std::stod(string_trim_and_check(line.substr(90,14))); // G14.6
+                ECA = std::stod(string_trim_and_check(line.substr(104,14))); // G14.6
+            }
+        }
+        else {
+            atID = std::stoull(string_trim_and_check(line.substr(0,8))); // I8
+            segName = string_trim_and_check(line.substr(9,4)); // 1X,A4
+            resID = string_trim_and_check(line.substr(14,4)); // 1X,A4
+            resName = string_trim_and_check(line.substr(19,4)); // 1X,A4
+            atomName = string_trim_and_check(line.substr(24,4)); // 1X,A4
+            atomType = string_trim_and_check(line.substr(29,4)); // 1X,A4
+            charge = std::stod(string_trim_and_check(line.substr(34,14))); // 1X,G14.6
+            mass = std::stod(string_trim_and_check(line.substr(48,14))); // G14.6
+            move = std::stoi(string_trim_and_check(line.substr(62,8))); //I8
+            if (is_cheq) {
+                ECH = std::stod(string_trim_and_check(line.substr(70,14))); // G14.6
+                ECA = std::stod(string_trim_and_check(line.substr(84,14))); // G14.6
+            }
+        }
+
+    }
+    catch (std::invalid_argument& invarg) {
+        return false;
+    }
+    data.push_back(std::make_tuple(atID,segName,resID,resName,atomName,atomType,charge,mass,move,ECH,ECA));
+    return true;
+}
+
 /* This function reads the standard column formatted files. Even though the name is
- CHARMM, it reads both XPLOR and CHARMM formatted files (also CHEQ and EXT). For 
- CHARMM format, the atomType is returned as a string however, i.e. in XPLOR format.*/
+ CHARMM, it reads CHARMM formatted files (CHEQ and EXT). For CHARMM format, the atomType is returned as a string, i.e. in XPLOR format, for consistency*/
 bool read_ATOM_line_CHARMM(const string& line, std::vector<std::tuple<unsigned long long,string,string,string,string,string,double,double,int,double,double> >& data,bool is_cheq,bool is_ext) {
     if (line.empty()) return false;
     // atID,segName,resID,resName,atName,atType,charge,mass,selection,*polarizability,TholeScaleFactor
