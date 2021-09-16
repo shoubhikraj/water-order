@@ -7,6 +7,23 @@ Depends on the chemfiles library: https://github.com/chemfiles/chemfiles/ and TC
 
 Compiles successfully on Windows with MSVC++ 2019, on Linux with GCC 10, and it should also compile on Mac OS (Instructions for compiling are provided below).
 
+# Detailed description
+Tetrahedral order parameter(*q*<sub>T</sub>) is a parameter that is used to characterise the degree of order, particularly for water. The *q*<sub>T</sub> for an oxygen can be calculated by considering the 4 nearest oxygens of that oxygen, using this expression:
+<p align="center">
+   <img src="https://latex.codecogs.com/png.latex?q&space;=&space;1&space;-&space;\frac{3}{8}\sum^3_{j=1}\sum^4_{k=j&plus;1}\left(\mathrm{cos}\psi_{jk}&plus;\frac{1}{3}\right)^2" title="q = 1 - \frac{3}{8}\sum^3_{j=1}\sum^4_{k=j+1}\left(\mathrm{cos}\psi_{jk}+\frac{1}{3}\right)^2" />
+</p>
+Where <i>ψ</i><sub>jk</sub> indicates the angle formed by the oxygens j and k and the central oxygen. For ice, *q*<sub>T</sub> is close to 1 (0.8-0.9), whereas for 
+liquid water *q*<sub>T</sub> is lower, around 0.5. In the gaseous state, *q*<sub>T</sub> should be close to 0. At intermediate temperatures, there are intermediate values
+<br>
+The fifth nearest neighbour parameter (*d*<sub>5</sub>) is simply the distance to the 5th nearest oxygen from the central oxygen. The value is lower for ice and is higher for liquid water. Both of these parameters are routinely used in calculations involving water, supercooled water and especially on supercooled water droplets.
+<br>
+This program is mainly aimed at calculating the radial distribution of *q*<sub>T</sub> and *d*<sub>5</sub> parameters for droplets/nanodroplets of water. The calculation procedure is as follows:
+1) First the centre of mass is evaluated for one frame
+2) The tetrahedral order parameter, or the fifth nearest neighbour parameter is calculated for each oxygen in the frame
+3) The program considers spherical shells from the centre of mass (r=0) to the value entered through `--rmax`, by increasing the radius as `--bin-width`. (In other words, it considers radius ranges of size `--bin-width` upto `--rmax`.) Then the average of *q*<sub>T</sub> or *d*<sub>5</sub> values of all oxygens in that range is taken. This gives the radial distribution.
+4) Steps 1-3 are iterated for each frame in the trajectory.
+5) The radial distributions from all of the frames are summed and then divided by the total number of frames—to get the average radial distribution for the trajectory
+
 ## How to run
 The executable can be run with command line arguments (also without):
 ```
