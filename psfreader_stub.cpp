@@ -28,8 +28,7 @@ string string_trim_and_check(string s);
 bool read_BOND_field(std::ifstream& infile, size_t start_line, std::vector<std::array<size_t,2>>& data);
 bool read_THETA_field(std::ifstream& infile, size_t start_line, std::vector<std::array<size_t,3>>& data);
 bool read_PHI_IMPHI_field(std::ifstream& infile,size_t start_line,std::vector<std::array<size_t,4>>& data,const string& dihed_type);
-std::vector<std::tuple<string,double>> read_PSF(string infile_name);
-
+std::vector<std::tuple<string,double>> read_PSF(string infile_name); // main function to read PSF file.
 
 
 std::vector<std::tuple<string,double>> read_PSF(string infile_name) {
