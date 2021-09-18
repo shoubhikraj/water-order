@@ -20,6 +20,7 @@
 #include <iomanip>
 #include <numeric>
 #include <omp.h>
+#include <cfenv>
 
 // when using MSVC++, include basetsd.h for SSIZE_T because it's ancient OpenMP 2.0
 // does not support unsigned index for OpenMP for loops. Intel C++ also defines
@@ -42,7 +43,6 @@ double get_nearest_fifth_dist(const std::vector<double>& dist_list,size_t dist_l
 bool file_exists(const string& str);
 double get_q_tet(const chemfiles::Frame& inputframe, const size_t centre, const std::array<size_t, 4>& nearest_four_indices, const std::vector<size_t>& oxy_ind_list);
 chemfiles::Vector3D get_centre_of_mass(const chemfiles::Frame& inputframe, const std::vector<double>& mass_list,const size_t natoms,const double mass_total);
-void printProgress(double percentage);
 bool is_within_bounds(const double value, const double low, const double high);
 
 
@@ -83,9 +83,7 @@ try {
     double bin_size; // bin-width in Angs
     
 
-
     // Check if no arguments are given
-
 
     if (atinfo_input_arg.getValue() == "NULL" && trj_input_arg.getValue() == "NULL") {
         cout << "No command line arguments for input files given, switching to keyboard input.\n";
@@ -315,10 +313,14 @@ try {
         // print the header into file
         outfile_oto << "x,y\n";
 
+        // for floating point overflow/underflow check
+        std::feclearexcept(FE_UNDERFLOW);
+        std::feclearexcept(FE_OVERFLOW);
+        
         // Input checks done, now onto main calculations (OTO)
 
         std::vector<size_t> hist_counts(num_bins, 0); // histogram counts
-        std::vector<long double> hist_collect_q_tet(num_bins); // collects the q_tet values        
+        std::vector<double> hist_collect_q_tet(num_bins); // collects the q_tet values        
         
         
         // iterate over whole trajectory
@@ -351,22 +353,29 @@ try {
                 for (int x = 0; x < num_bins; ++x) {
                     if (is_within_bounds(com_o_dist, bin_edges[x], bin_edges[x + 1])) {
                         #pragma omp atomic
-                        hist_counts[x] += 1;
+                        hist_counts[x]++;
                         #pragma omp atomic
                         hist_collect_q_tet[x] += qval;
                         break;
                     }
                 }
             }
-            if (n % 50 == 0) {
-                for (float count = 0.0f; count <= 1.0f; count += 0.01f) {
-                    if (n == (int)(num_processed_frames * count)) cout << (int)(count * 100) << "% done...";
-                }
+            if (n % 200 == 0) {
+                cout << "\rFrame " << n << " processed";
+                //for (float count = 0.0f; count <= 1.0f; count += 0.01f) {
+                //    if (n == (int)(num_processed_frames * count)) cout << (int)(count * 100) << "% done...";
+                //}
             }
         }
         }
         // parallel region processing ends here
-        // 
+        
+        // check if there were overflow/underflow
+        if (std::fetestexcept(FE_UNDERFLOW) || std::fetestexcept(FE_OVERFLOW)) {
+            cout << "Floating point error!\nExiting";
+            exit(1);
+        }
+
         // write the histogram x and y into the file
         double y_intens = 0.0;
         for (int x = 0; x < num_bins; ++x) {
@@ -409,23 +418,31 @@ try {
         outfile_d5 << "x,y\n";        
 
         // Input checks done, now onto main calculations (d5)
+
+        // for floating point overflow/underflow check
+        std::feclearexcept(FE_UNDERFLOW);
+        std::feclearexcept(FE_OVERFLOW);
         
         // iterate over whole trajectory
-        
+
         std::vector<size_t> hist_counts(num_bins, 0); // histogram counts
-        std::vector<long double> hist_collect_d5(num_bins); // collects the q_tet values
+        std::vector<double> hist_collect_d5(num_bins); // collects the q_tet values
         
         #pragma omp parallel
         {
         std::vector<double> dist_oo(oxy_size); // holds distances between oxygens
         double d5_val; // holds d5 value
+        auto frame = chemfiles::Frame(); // holds the frame, necessary to have a dummy variable due to scoping
         if (omp_get_thread_num() == 0) {
             cout << "\nRunning on " << omp_get_num_threads() << " threads\n\n";
         }
 
         #pragma omp for schedule(static, 1)
         for (openmp_index_type n = start_step; n < end_step; ++n) {
-            auto frame = trj.read_step(n);
+            #pragma omp critical
+            {
+            frame = trj.read_step(n);
+            }
             auto com_of_frame = get_centre_of_mass(frame, mass_list, natoms, total_mass); // gives COM for this frame
             auto positions_this_frame = frame.positions();
             for (size_t i = 0; i < oxy_size; ++i) {
@@ -437,21 +454,28 @@ try {
                 for (int x = 0; x < num_bins; ++x) {
                     if (is_within_bounds(com_o_dist, bin_edges[x], bin_edges[x + 1])) {
                         #pragma omp atomic
-                        hist_counts[x] += 1;
+                        hist_counts[x]++;
                         #pragma omp atomic
                         hist_collect_d5[x] += d5_val;
                         break;
                     }
                 }
             }
-            if (n % 50 == 0) {
-                for (float count = 0.0f; count <= 1.0f; count += 0.01f) {
-                    if (n == (short int)(num_processed_frames * count)) cout << (int)(count * 100) << "% done...";
-                }
+            if (n % 200 == 0) {
+                cout << "\rFrame " << n << " processed";
+                //for (float count = 0.0f; count <= 1.0f; count += 0.01f) {
+                //    if (n == (short int)(num_processed_frames * count)) cout << (int)(count * 100) << "% done...";
+                //}
             }
         }
         }
         // parallel processing ends here
+
+        // check if there were overflow/underflow
+        if (std::fetestexcept(FE_UNDERFLOW) || std::fetestexcept(FE_OVERFLOW)) {
+            cout << "Floating point error!\nExiting";
+            exit(1);
+        }
 
         // write the histogram x and y into the file
         double y_intens = 0.0;
@@ -665,16 +689,6 @@ chemfiles::Vector3D get_centre_of_mass(const chemfiles::Frame& inputframe, const
     return frame_com;
 }
 
-constexpr auto PBSTR = "||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||";
-constexpr auto PBWIDTH = 60;
-
-void printProgress(double percentage) {
-    int val = (int)(percentage * 100);
-    int lpad = (int)(percentage * PBWIDTH);
-    int rpad = PBWIDTH - lpad;
-    printf("\r%3d%% [%.*s%*s]", val, lpad, PBSTR, rpad, "");
-    fflush(stdout);
-}
 
 bool is_within_bounds(const double value, const double low, const double high)
 {
