@@ -124,6 +124,6 @@ For Windows, precompiled binaries are provided in the releases section: https://
 
 ----
 
-Please cite if you use this software.
+Please acknowledge if you use this software.
 
 Feel free to open an issue if there are any problems.
