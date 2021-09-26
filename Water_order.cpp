@@ -311,7 +311,7 @@ try {
         outfile_oto << std::fixed << std::showpoint; // fixed form and always output with decimal point
         outfile_oto << std::setprecision(6); // set 6 decimal points for float output
         // print the header into file
-        outfile_oto << "x,y\n";
+        outfile_oto << "r,qT\n";
 
         // for floating point overflow/underflow check
         std::feclearexcept(FE_UNDERFLOW);
@@ -415,7 +415,7 @@ try {
         outfile_d5 << std::fixed << std::showpoint; // fixed form and always output with decimal point
         outfile_d5 << std::setprecision(6); // set 6 decimal points for float output
         // print the header into file
-        outfile_d5 << "x,y\n";        
+        outfile_d5 << "r,d5\n";        
 
         // Input checks done, now onto main calculations (d5)
 
