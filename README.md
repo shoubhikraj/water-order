@@ -107,10 +107,14 @@ An example of plotting the output data with Python (using pandas and matplotlib)
 import pandas as pd
 import matplotlib.pyplot as plt
 
+# read the CSV file
 data = pd.read_csv("Water_order_oto.csv")
+# Then plot the x and y axes
 plt.plot(data["r"],data["qT"])
+# Label the axes
 plt.xlabel("r")
 plt.ylabel("$q_\mathrm{T}$(r)")
+# Show the plot
 plt.show()
 ```
 
