@@ -148,7 +148,7 @@ By default chemfiles is built as a static library, but you can also build a dyna
 For Windows, precompiled binaries are provided in the releases section: https://github.com/ShoubhikRaj/water-order/releases.
 
 1) First install Visual Studio 2019 Build Tools (a full install of Visual Studio 2019 can also be done, but only the build tools are required for the purposes of this). Open the Visual Studio Command Line for your platform. This can be found from the search bar in Start Menu. For 64-bit Windows, this is named "x64 Native Tools Command Prompt for VS 2019". (Note that earlier versions of Visual Studio should also work, but has not been tested)
-2) Unzip the archive. On Windows, the file explorer can do this. If Winzip or Winrar are used, be careful, because they create an extra level of folder.
+2) Unzip the `chemfiles-592c313.zip` archive. On Windows, the file explorer can do this without any other software. If Winzip or Winrar are used, be careful, because they create an extra level of folder.
 3) Build chemfiles with CMake.
 ```batchfile
 cd chemfiles-master
