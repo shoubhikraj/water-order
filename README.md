@@ -8,7 +8,7 @@ It calculates the order parameter/d5 parameter for each oxygen, then takes the a
 
 Depends on the chemfiles library: https://github.com/chemfiles/chemfiles/ and TCLAP library http://tclap.sourceforge.net/ (v1.2.4 already included in this repository).
 
-Compiles successfully on Windows with MSVC++ 2019, on Linux with GCC 10, and it should also compile on Mac OS (Instructions for compiling are provided below).
+Compiles successfully on Windows with MSVC++ 2019, on Linux with GCC 10, and it should also compile on Mac OS (Instructions for compiling are provided at the bottom of the page).
 
 # Detailed description
 Tetrahedral order parameter(*q*<sub>T</sub>) is a parameter that is used to characterise the degree of order, particularly for water. The *q*<sub>T</sub> for an oxygen can be calculated by considering the 4 nearest oxygens of that oxygen, using this expression:
@@ -96,6 +96,23 @@ Example usage:
 Water_order -f trajectory.dcd -s topology.psf -c OH2 -t d5 --rmax 20 --bin-width 0.5
 ```
 This calculates the radial distribution of d5 parameter of trajectory.dcd in the distance of 20 Angstroms from the centre of mass of droplet. The d5 values are averaged in ranges of 0.5 Angstroms. The topology file **must** be a psf file.
+
+## The output file
+The program outputs the radial distribution as a CSV file, containing two columns. The first column is `r` and the second column is the `qT` or `d5` values. The data can be easily plotted with python, or xmgrace, or whatever visualisation software you prefer.
+
+The base name of the output file is determined by the `-o` argument in the command line. When running OTO calculation, `_oto.csv` is appended to the base name. Similarly for d5 calculation, `_d5.csv` is appended to the base name. The default base name is `Water_order`, so the default output files are named `Water_order_oto.csv` and `Water_order_d5.csv`.
+
+An example of plotting the output data with Python (using pandas and matplotlib):
+```python
+import pandas as pd
+import matplotlib.pyplot as plt
+
+data = pd.read_csv("Water_order_oto.csv")
+plt.plot(data["r"],data["qT"])
+plt.xlabel("r")
+plt.ylabel("$q_\mathrm{T}$(r)")
+plt.show()
+```
 
 ## Current issues
 1) If you attempt to run Water_order on a large DCD file (from NAMD, CHARMM or LAMMPS) it will run out of memory. This is due to a problem in the VMD molfile plugin, which is used by chemfiles for reading DCD files. VMD molfile reads the whole trajectory into memory. (This is mentioned in chemfiles issues [here](https://github.com/chemfiles/chemfiles/issues/421) and [here](https://github.com/chemfiles/chemfiles/issues/370).)
