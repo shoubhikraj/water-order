@@ -13,7 +13,7 @@ Compiles successfully on Windows with MSVC++ 2019, on Linux with GCC 10, and it 
 ### Is this software is for you?
 Water-order is mainly aimed at calculations on water droplets. For droplets, the main feature of interest is the radial distribution of the order parameters because it reveals the radial structure of the droplets (as they are mostly spherical). The radius is always calculated from the centre of mass of the droplet.
 
-This is why water-order calculates the radial distribution of various parameters, by averaging over a certain range. It is also assumed, that there is no periodic boundary condition (which is true for droplets). Water-order is not for periodic systems, neither does it output statistics for individual water molecules, although it is possible to make the program output them by modifying the "Water_order.cpp" source file.
+This is why water-order calculates the radial distribution of various parameters, by averaging over a certain range. It is also assumed that there is no periodic boundary condition (which is true for droplets). Water-order is not for periodic systems, neither does it output data for individual water molecules, although it is possible to make the program output them by modifying the "Water_order.cpp" source file.
 
 # Detailed description
 Tetrahedral order parameter(*q*<sub>T</sub>) is a parameter that is used to characterise the degree of order, particularly for water. The *q*<sub>T</sub> for an oxygen can be calculated by considering the 4 nearest oxygens of that oxygen, using this expression:
