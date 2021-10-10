@@ -10,6 +10,11 @@ Depends on the chemfiles library: https://github.com/chemfiles/chemfiles/ and TC
 
 Compiles successfully on Windows with MSVC++ 2019, on Linux with GCC 10, and it should also compile on Mac OS (Instructions for compiling are provided at the bottom of the page).
 
+### Is this software is for you?
+Water-order is mainly aimed at calculations on water droplets. For droplets, the main feature of interest is the radial distribution of the order parameters because it reveals the radial structure of the droplets (as they are mostly spherical). The radius is always calculated from the centre of mass of the droplet.
+
+This is why water-order calculates the radial distribution of various parameters, by averaging over a certain range. It is also assumed, that there is no periodic boundary condition (which is true for droplets). Water-order is not for periodic systems, neither does it output statistics for individual water molecules, although it is possible to make the program output them by modifying the "Water_order.cpp" source file.
+
 # Detailed description
 Tetrahedral order parameter(*q*<sub>T</sub>) is a parameter that is used to characterise the degree of order, particularly for water. The *q*<sub>T</sub> for an oxygen can be calculated by considering the 4 nearest oxygens of that oxygen, using this expression:
 
@@ -158,8 +163,8 @@ For Windows, precompiled binaries are provided in the releases section: https://
     cmake --build . --target install
 4) Check that there is a `chemfiles.lib` in the `chemfiles-install\lib` directory.
 5) Finally, compile Water_order and link to chemfiles library.
-```Batchfile
-cl /EHSc /Fe:Water_order /O2 /MD /fp:fast /openmp /I.\tclap-1.2.4\include /I.\chemfiles-install\include psfreader_stub.cpp Water_order.cpp /link .\chemfiles-install\lib\chemfiles.lib
+```batchfile
+cl /EHSc /Fe:Water_order /O2 /MD /fp:fast /openmp /I.\tclap-1.2.4\include /I.\chemfiles-install\include psfreader_stub.cpp Water_order.cpp /link .\chemfiles-install\lib\chemfiles.lib ws2_32.lib advapi32.lib
 ```
 Again, chemfiles can be built as a dynamic library (DLL). In that case you still have to link to the `chemfiles.lib` import library. However, the executable will become dynamically linked to the `chemfiles.dll`, and that DLL has to be in the same folder as the executable, or in PATH.
 
