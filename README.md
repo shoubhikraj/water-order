@@ -10,12 +10,12 @@ Depends on the chemfiles library: https://github.com/chemfiles/chemfiles/ and TC
 
 Compiles successfully on Windows with MSVC++ 2019, on Linux with GCC 10, and it should also compile on Mac OS (Instructions for compiling are provided at the bottom of the page).
 
-### Is this software is for you?
+### Is this software suitable for you?
 Water-order is mainly aimed at calculations on water droplets. For droplets, the main feature of interest is the radial distribution of the order parameters because it reveals the radial structure of the droplets (as they are mostly spherical). The radius is always calculated from the centre of mass of the droplet.
 
 This is why water-order calculates the radial distribution of various parameters, by averaging over a certain range. It is also assumed that there is no periodic boundary condition (which is true for droplets). Water-order is not for periodic systems, neither does it output data for individual water molecules, although it is possible to make the program output them by modifying the "Water_order.cpp" source file.
 
-# Detailed description
+## Detailed description
 Tetrahedral order parameter(*q*<sub>T</sub>) is a parameter that is used to characterise the degree of order, particularly for water. The *q*<sub>T</sub> for an oxygen can be calculated by considering the 4 nearest oxygens of that oxygen, using this expression:
 
 <p align="center">
@@ -180,3 +180,9 @@ Note that the program can also be compiled without OpenMP, it will give the same
 Please acknowledge if you use this software.
 
 Feel free to open an issue if there are any problems.
+
+## License and Contributing
+
+The software is released under MIT license. Water-order also contains code from tclap-v1.2.4, released under MIT license and chemfiles-v0.11.0, released under BSD-3 clause license. Please read the the [LICENSE](https://github.com/ShoubhikRaj/water-order/blob/main/LICENSE) file for the full terms and conditions of the license.
+
+Any contribution is greatly appreciated. Please open a pull request/issue if you wish to contribute to the code.
