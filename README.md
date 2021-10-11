@@ -138,7 +138,7 @@ What is required:
     ```shell
     unzip chemfiles-592c313.zip
     cmake -S./chemfiles-master -B./chemfiles-master/build -DCMAKE_INSTALL_PREFIX=./chemfiles-install/
-    cmake --build . --target install
+    cmake --build . --config Release --target install
     ```
     Further instructions for compiling chemfiles library can be found [here](http://chemfiles.org/chemfiles/latest/installation.html).
 2) Check that there is a `libchemfiles.a` file in the `chemfiles-install/lib` directory.
@@ -160,7 +160,7 @@ For Windows, precompiled binaries are provided in the releases section: https://
     mkdir build
     cd build
     cmake .. -DCMAKE_INSTALL_PREFIX=../../chemfiles-install -DCMAKE_BUILD_TYPE=Release
-    cmake --build . --target install
+    cmake --build . --config Release --target install
 4) Check that there is a `chemfiles.lib` in the `chemfiles-install\lib` directory.
 5) Finally, compile Water_order and link to chemfiles library.
 ```batchfile
