@@ -6,7 +6,7 @@ This software calculates the radial distribution of several order parameters, in
 
 It calculates the requested order parameter for each oxygen, then takes the average of all oxygens in a certain distance range (`--bin-width`) from the centre-of-mass of the droplet, to get the radial distribution. For a trajectory, the distributions are also averaged over the whole trajectory.
 
-Depends on the chemfiles library: https://github.com/chemfiles/chemfiles/ and TCLAP library http://tclap.sourceforge.net/ (v1.2.4 already included in this repository).
+Depends on the chemfiles library: https://github.com/chemfiles/chemfiles/, TCLAP library http://tclap.sourceforge.net/ and Voro++ library https://github.com/chr1shr/voro. All of source files for the libraries that were used to compile the latest version are already included in the repository. This has been done to avoid incompatibility between different versions of those libraries, and to avoid the need to hunt down dependencies.
 
 Compiles successfully on Windows with MSVC++ 2019, on Linux with GCC 10, and it should also compile on Mac OS (Instructions for compiling are provided at the bottom of the page).
 
