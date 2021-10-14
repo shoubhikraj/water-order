@@ -17,7 +17,7 @@ cmake --build . --config Release --target install
 )
 @if exist "chemfiles-install\lib\chemfiles.lib" (
 @echo *** Now compiling water_order ***
-%CXX% /EHSc /Fe:Water_order /O2 /MD /fp:fast /openmp /I.\tclap-1.2.4\include /I.\chemfiles-install\include Water_order.cpp /link .\chemfiles-install\lib\chemfiles.lib ws2_32.lib advapi32.lib
+%CXX% /EHSc /Fe:Water_order /O2 /MD /fp:fast /openmp /I.\tclap-1.2.4\include /I.\chemfiles-install\include Water_order.cpp /I.\voro-71c84c8\src Water_order.cpp voro-71c84c8\src\voro++.cc /link .\chemfiles-install\lib\chemfiles.lib ws2_32.lib advapi32.lib
 ) else (
 @echo !!! ChemFiles compilation did not finish successfully !!!
 @echo !!! Please check the CMake logs !!! 

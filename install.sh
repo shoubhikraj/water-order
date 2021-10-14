@@ -16,7 +16,7 @@ then
 		echo Setting C++ compiler to default: GNU C++ compiler g++
 		CXX=g++
 	fi
-	$CXX -fexceptions -o Water_order -O3 -fopenmp -I./tclap-1.2.4/include -I./chemfiles-install/include Water_order.cpp -lchemfiles -L./chemfiles-install/lib
+	$CXX -fexceptions -o Water_order -O3 -fopenmp -I./tclap-1.2.4/include -I./chemfiles-install/include -I./voro-71c84c8/src Water_order.cpp voro-71c84c8/src/voro++.cc -lchemfiles -L./chemfiles-install/lib
 else
 	echo !!! Error in compiling chemfiles !!!
 	echo !!! Please check the CMake logs !!!
