@@ -1,0 +1,65 @@
+[name]
+type = "string"
+
+"Amber NetCDF" = "The global attribute ``title`` is used as the frame **name** when reading."
+"Amber Restart" = "The global attribute ``title`` is used as the frame **name** when reading."
+CML = "The text in the ``name`` node of a molecule. Only set if the node is present."
+PDB = "The text described by the ``TITLE`` record is used as the frame **name** when reading."
+GRO = "The first line of a GRO file is used as the frame **name** when reading."
+SDF = "The first line of an SDF file is used as the frame **name** when reading."
+MOL2 = "The first line after ``@<TRIPOS>MOLECULE`` is used as the frame **name** when reading."
+MMTF = "The text in the ``title`` field is used as the frame **name** when reading."
+mmCIF = "The text in the ``_struct.title`` field is used as the frame **name** when reading."
+SMI = "Any string after a terminating (blank) character in a SMILES string."
+
+[classification]
+type = "string"
+
+PDB = "The classification of a structure assigned by the PDB. Read from the ``HEADER`` record."
+
+[pdb_idcode]
+type = "string"
+
+PDB = "Four letter code for structures deposited in the PDB. Read from the ``HEADER`` record."
+MMTF = "Four letter code for structures deposited in the PDB. Read from the ``structuresId`` field."
+mmCIF = "Four letter code for structures deposited in the PDB. Read from the ``_entry.id`` field."
+
+[deposition_date]
+type = "string"
+
+PDB = "Date (DD-MMM-YY format) of the deposition in the PDB. Read from the ``HEADER`` record."
+MMTF = "Date (YYYY-MM-DD format) of the deposition in the PDB. Read from the ``depositionDate`` field."
+
+[title]
+type = "string"
+
+CML = "The text of the ``title`` attribute in a molecule node. Only set if the attribute is present."
+
+[time]
+type = "number"
+
+LAMMPS = "The time of the frame in time units."
+TNG = "The time of the frame in pico seconds."
+TRR = "The time of the frame in pico seconds."
+XTC = "The time of the frame in pico seconds."
+
+[lammps_units]
+type = "string"
+
+LAMMPS = "Style of units used by LAMMPS for a simulation."
+
+[xtc_precision]
+type = "number"
+
+XTC = """The precision used to compress the coordinates. Only used for ten or more atoms.
+Default is 1000."""
+
+[has_positions]
+type = "bool"
+
+TRR = "Set to ``true`` if the frame contains positions. All positions are zero if not."
+
+[trr_lambda]
+type = "number"
+
+TRR = "This is usually the free energy coupling parameter."
