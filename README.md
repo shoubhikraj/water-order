@@ -16,7 +16,7 @@ Water-order is mainly aimed at calculations on water droplets. For droplets, the
 This is why water-order calculates the radial distribution of various parameters, by averaging over a certain range. It is also assumed that there is no periodic boundary condition (which is true for droplets). Water-order is not for periodic systems, neither does it output data for individual water molecules, although it is possible to make the program output them by modifying the "Water_order.cpp" source file.
 
 ## Detailed description
-Tetrahedral order parameter(*q*<sub>T</sub>) is a parameter that is used to characterise the degree of order, particularly for water. The *q*<sub>T</sub> for an oxygen can be calculated by considering the 4 nearest oxygens of that oxygen, using this expression:
+**Tetrahedral order parameter** (*q*<sub>T</sub>) is a parameter that is used to characterise the degree of order, particularly for water. The *q*<sub>T</sub> for an oxygen can be calculated by considering the 4 nearest oxygens of that oxygen, using this expression:
 
 <p align="center">
    <img src="https://latex.codecogs.com/png.latex?q_T&space;=&space;1&space;-&space;\frac{3}{8}\sum^3_{j=1}\sum^4_{k=j&plus;1}\left(\mathrm{cos}\psi_{jk}&plus;\frac{1}{3}\right)^2" title="q_T = 1 - \frac{3}{8}\sum^3_{j=1}\sum^4_{k=j+1}\left(\mathrm{cos}\psi_{jk}+\frac{1}{3}\right)^2" />
@@ -25,9 +25,9 @@ Tetrahedral order parameter(*q*<sub>T</sub>) is a parameter that is used to char
 Where <i>ψ</i><sub>jk</sub> indicates the angle formed by the oxygens j and k and the central oxygen. For ice, <i>q</i><sub>T</sub> is close to 1 (0.8-0.9), whereas for 
 liquid water <i>q</i><sub>T</sub> is lower, around 0.5. In the gaseous state, *q*<sub>T</sub> should be close to 0. At intermediate temperatures, there are intermediate values
 <br><br>
-The fifth nearest neighbour parameter (*d*<sub>5</sub>) is simply the distance to the 5th nearest oxygen from the central oxygen. The value is lower for ice and is higher for liquid water. Both of these parameters are routinely used in calculations involving water, supercooled water and especially on supercooled water droplets.
+**The fifth nearest neighbour parameter** (*d*<sub>5</sub>) is simply the distance to the 5th nearest oxygen from the central oxygen. The value is lower for ice and is higher for liquid water. Both of these parameters are routinely used in calculations involving water, supercooled water and especially on supercooled water droplets.
 <br><br>
-The translational tetrahedral order parameter (*S*<sub>k</sub>) is similar to the oriental tetrahedral order parameter in that it considers the four nearest neighbours. However, it considers the distances instead of angles.
+**The translational tetrahedral order parameter** (*S*<sub>k</sub>) is similar to the oriental tetrahedral order parameter in that it considers the four nearest neighbours. However, it considers the distances instead of angles.
 
 <p align="center">
    <img src="https://latex.codecogs.com/png.latex?S_k&space;=&space;1-\frac{1}{3}\sum^4_{k=1}\frac{(r_k-\bar{r})^2}{4\bar{r}^2}" title="S_k = 1-\frac{1}{3}\sum^4_{k=1}\frac{(r_k-\bar{r})^2}{4\bar{r}^2}" />
@@ -35,7 +35,7 @@ The translational tetrahedral order parameter (*S*<sub>k</sub>) is similar to th
 
 Where r<sub>k</sub> is the distance between central oxygen and the k-th nearest neighbour and <img src="https://latex.codecogs.com/png.latex?\bar{r}" title="\bar{r}" /> is the arithmetic mean of the distances to the 4 nearest neighbours.
 <br><br>
-The Voronoi cell based density constructs Voronoi cells for each heavy atom in the system (i.e. excluding hydrogen). The volume of the Voronoi cell associated with each water molecule (because it has one oxygen - which is a heavy atom), is calculated. The density of that molcule is then, the mass of one water molecule divided by the volume of the cell containing it.
+**The Voronoi cell based density** (*ρ*<sub>V</sub>) constructs Voronoi cells for each heavy atom in the system (i.e. excluding hydrogen). The volume of the Voronoi cell associated with each water molecule (because it has one oxygen - which is a heavy atom), is calculated. The density of that molcule is then, the mass of one water molecule divided by the volume of the cell containing it.
 
 This program is calculates the radial distribution of order parameters for droplets/nanodroplets of water. The calculation procedure is as follows:
 1) First the centre of mass is evaluated for one frame
@@ -51,10 +51,11 @@ The executable can be run with command line arguments (also without):
 ```
 USAGE:
 
-   Water_order  [-f <string>] [-s <string>] [-c <string>] [-t <OTO|d5>]
-                    [-o <string>] [--rmax <float (Angstrom)>] [--bin-width
-                    <float (Angstrom)>] [--start <positive integer>]
-                    [--stop <positive integer>] [--] [--version] [-h]
+   Water_order  [-f <string>] [-s <string>] [-c <string>] [-t <OTO|d5|Sk
+                |rhoV>] [-o <string>] [--rmax <float (Angstrom)>]
+                [--bin-width <float (Angstrom)>] [--start <positive
+                integer>] [--stop <positive integer>] [--] [--version]
+                [-h]
 
 
 Where:
@@ -63,14 +64,15 @@ Where:
      Name of the trajectory file
 
    -s <string>,  --atom-info <string>
-     Name of the file containing the atom names
+     Name of the file containing the atom information (topology)
 
    -c <string>,  --oxygen-name <string>
      Name of oxgyen atoms in the atom-info file
 
-   -t <OTO|d5>,  --task <OTO|d5>
-     Task requested to run: OTO = Oriental Tetrahedral Order, d5 = d5
-     parameter; default is OTO
+   -t <OTO|d5|Sk|rhoV>,  --task <OTO|d5|Sk|rhoV>
+     Task requested to run: OTO = Oriental Tetrahedral Order parameter, d5
+     = d5 parameter, Sk = Translational Tetrahedral Order parameter, rhoV =
+     Voronoi cell based water density; default is OTO
 
    -o <string>,  --output-file <string>
      Base name of output file; default is 'Water_order'
@@ -113,10 +115,11 @@ Water_order -f trajectory.dcd -s topology.psf -c OH2 -t d5 --rmax 20 --bin-width
 This calculates the radial distribution of d5 parameter of trajectory.dcd in the distance of 20 Angstroms from the centre of mass of droplet. The d5 values are averaged in ranges of 0.5 Angstroms. The topology file can be a psf file, it can also be any file containing mass information that can be read by chemfiles.
 
 ## The output file
-The program outputs the radial distribution as a CSV file, containing two columns. The first column is `r` and the second column is the `qT` or `d5` values. The data can be easily plotted with python, or xmgrace, or whatever visualisation software you prefer.
+The program outputs the radial distribution as a CSV file, containing two columns. The first column is `r` (i.e. radius) and the second column is the `qT` or `d5` or `Sk` or `rhoV`, depending on which calculation is requested (i.e. 2nd column contains values of the parameter). The Voronoi cell based densities(*ρ*<sub>V</sub>) have the units of g/cm<sup>3</sup>; the other parameters are all unitless. The data can be easily plotted with python, or xmgrace, or whatever visualisation software you prefer.
 
-The base name of the output file is determined by the `-o` argument in the command line. When running OTO calculation, `_oto.csv` is appended to the base name. Similarly for d5 calculation, `_d5.csv` is appended to the base name. The default base name is `Water_order`, so the default output files are named `Water_order_oto.csv` and `Water_order_d5.csv`.
+The base name of the output file is determined by the `-o` argument in the command line. When running OTO calculation, `_oto.csv` is appended to the base name. Similarly for the other calculations, `_d5.csv`, `_Sk.csv`, `_rhoV.csv` is appended to the base name. The default base name is `Water_order`, so the default output files are named `Water_order_oto.csv` or `Water_order_d5.csv` etc.
 
+## Example
 An example of plotting the output data with Python (using pandas and matplotlib):
 ```python
 import pandas as pd
@@ -141,6 +144,14 @@ plt.show()
 What is required:
 1) C/C++ compiler that supports C++11 standard or higher.
 2) CMake
+
+Simple compilation:
+1) First open a terminal or command prompt where cmake and the C/C++ compilers are in PATH. On Windows, with Visual Studio, this can be done by opening "x64 Native Tools Command Prompt for VS 2019" or something similar to that from the start menu. On Linux, the compilers are usually already in the PATH; if they are not then some script that sets the environment variables has to be run, it depends on which compiler you are using.
+2) Set the environment variable CC and CXX if you are not using the default compiler for CMake (For Linux this is GNU compiler, for Windows it is Visual C/C++)
+3) Run the install script. For Linux, Mac OS X or other POSIX systems, use the `install.sh` script. For Windows, run the `install.bat` batch file.
+4) After compiling, there should be an executable named "Water_order" in the folder.
+
+For more details about installation, please check the INSTALL file.
 
 ### For Linux or Mac OS X (Or other Unix-like systems)
 
