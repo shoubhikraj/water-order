@@ -1,0 +1,14 @@
+# Use native line endings for text files
+* text=auto
+
+# Source codes are text files
+*.c text
+*.h text
+*.cpp text
+*.hpp text
+*.cc text
+*.hh text
+
+# Command line scripts have to maintain native line ending
+install.sh text eol=lf
+install.bat text eol=crlf
