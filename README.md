@@ -147,8 +147,8 @@ What is required:
 
 Simple compilation:
 1) First open a terminal or command prompt where cmake and the C/C++ compilers are in PATH. On Windows, with Visual Studio, this can be done by opening "x64 Native Tools Command Prompt for VS 2019" or something similar to that from the start menu. On Linux, the compilers are usually already in the PATH; if they are not then some script that sets the environment variables has to be run, it depends on which compiler you are using.
-2) Set the environment variable `CC` and `CXX` if you are not using the default compiler for CMake (For Linux default is GNU compiler, for Windows it is Visual C/C++)
-3) Run the install script. For Linux, Mac OS X or other POSIX systems, use the `install.sh` script. For Windows, run the `install.bat` batch file.
+2) Set the environment variable `CC` and `CXX` if you are not using the default compiler for CMake (For Linux default is GNU compiler, for Windows it is Visual C/C++).
+3) Run the install script. For Linux, Mac OS X or other POSIX systems, use the `install.sh` script. For Windows, run the `install.bat` batch file. The scripts should pick up the compiler from the `CXX` environment variable, if it is set. Otherwise it uses the default compiler.
 4) After compiling, there should be an executable named "Water_order" in the folder.
 
 For more details about installation, please check the INSTALL file.
