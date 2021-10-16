@@ -1,5 +1,4 @@
 # Use native line endings for text files
-* text=auto
 
 # Source codes are text files
 *.c text
