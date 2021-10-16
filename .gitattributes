@@ -8,6 +8,10 @@
 *.cc text
 *.hh text
 
+# Trajectory files are binary
+*.dcd binary
+
 # Command line scripts have to maintain native line ending
 install.sh text eol=lf
 install.bat text eol=crlf
+
