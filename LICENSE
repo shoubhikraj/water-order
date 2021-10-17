@@ -20,7 +20,9 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
-Water_order also includes the source files of tclap-v1.2.4, covered under MIT License, chemfiles-v0.11.0-dev, covered under BSD-3 Clause license, and voro++, covered under a modified MIT license.
+Water_order also includes the source files of tclap-v1.2.4, covered under MIT
+License, chemfiles-v0.11.0-dev, covered under BSD-3 Clause license, and voro++,
+covered under a modified MIT license.
 
 =====================================================
 
