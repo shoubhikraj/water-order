@@ -137,7 +137,7 @@ plt.show()
 ```
 
 ## Current issues
-1) If you attempt to run Water_order on a large DCD file (from NAMD, CHARMM or LAMMPS) it will run out of memory. This is due to a problem in the VMD molfile plugin, which is used by chemfiles for reading DCD files. VMD molfile reads the whole trajectory into memory. (This is mentioned in chemfiles issues [here](https://github.com/chemfiles/chemfiles/issues/421) and [here](https://github.com/chemfiles/chemfiles/issues/370).)
+1) If you attempt to run Water_order on a large DCD file (from NAMD, CHARMM or LAMMPS) it will run out of memory. This is due to a problem in the VMD molfile plugin, which is used by chemfiles for reading DCD files. VMD molfile reads the whole trajectory into memory. (This is mentioned in chemfiles issues [here](https://github.com/chemfiles/chemfiles/issues/421) and [here](https://github.com/chemfiles/chemfiles/issues/370).) A workaround is to convert the DCD file to gromacs TRR or XTC format, which do not have this problem. The conversion can be done by `catdcd` of VMD or by `mdconvert` tool of MDTraj, and many other tools.
 2) For histogramming, the sum is accumulated in a `double` type variable. If the trajectory is very large, this can cause overflow. The program checks for the overflow, and will automatically stop. If this happens, please open an issue, and I will try to implement a workaround. 
 
 ## How to compile
