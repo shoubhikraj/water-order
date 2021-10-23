@@ -7,6 +7,7 @@ cmake .. -DCMAKE_INSTALL_PREFIX=../../chemfiles-install -DCMAKE_BUILD_TYPE=Relea
 cmake --build . --config Release --target install
 @cd ..
 @cd ..
+@setlocal
 @setlocal enableextensions
 @setlocal enabledelayedexpansion
 @if defined CXX (
