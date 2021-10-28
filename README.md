@@ -120,7 +120,9 @@ The program outputs the radial distribution as a CSV file, containing two column
 The base name of the output file is determined by the `-o` argument in the command line. When running OTO calculation, `_oto.csv` is appended to the base name. Similarly for the other calculations, `_d5.csv`, `_Sk.csv`, `_rhoV.csv` is appended to the base name. The default base name is `Water_order`, so the default output files are named `Water_order_oto.csv` or `Water_order_d5.csv` etc.
 
 ## Example
-An example of plotting the output data with Python (using pandas and matplotlib):
+First run the tests given in the `tests` folder.
+
+An example of plotting the output data (from the test) with Python (using pandas and matplotlib):
 ```python
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -135,6 +137,7 @@ plt.ylabel("$q_\mathrm{T}$(r)")
 # Show the plot
 plt.show()
 ```
+<img src="https://github.com/shoubhikraj/water-order/blob/main/tests/qT_plot_matplotlib.PNG" width=400>
 
 ## Current issues
 1) If you attempt to run Water_order on a large DCD file (from NAMD, CHARMM or LAMMPS) it will run out of memory. This is due to a problem in the VMD molfile plugin, which is used by chemfiles for reading DCD files. VMD molfile reads the whole trajectory into memory. (This is mentioned in chemfiles issues [here](https://github.com/chemfiles/chemfiles/issues/421) and [here](https://github.com/chemfiles/chemfiles/issues/370).) A workaround is to convert the DCD file to gromacs TRR or XTC format, which do not have this problem. The conversion can be done by `catdcd` of VMD or by `mdconvert` tool of MDTraj, and many other tools.
