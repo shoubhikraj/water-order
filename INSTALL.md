@@ -1,6 +1,6 @@
 ChemFiles currently builds with GNU, Clang and Intel C/C++ compilers on POSIX systems and Visual C++ on Windows systems. So it is recommended that water-order is built with the same compiler that you use for chemfiles. It is possible to use different compilers, but it is not recommended. Also make sure that C++ exception handling is enabled.
 
-If you wish to modify the build process, look at the shell or batch install scripts that have been provided. The build process is not long or complicated, and there are detailed instructions for building chemfiles that is available on their webpages. Compiling water-order is just compiling the source file and linking with the chemfiles library.
+If you wish to modify the build process, look at the shell or batch install scripts that have been provided. The build process is not long or complicated, and there are detailed instructions for building chemfiles that is available on their webpages. Compiling water-order is simply compiling the source file of water-order and voro++, with the appropriate includes and then linking with the chemfiles library.
 
 ### For Linux or Mac OS X (Or other Unix-like systems)
 
