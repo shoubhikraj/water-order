@@ -1,4 +1,6 @@
-ChemFiles currently builds with GNU, Clang and Intel C/C++ compilers on POSIX systems and Visual C++ on Windows systems. So it is recommended that water-order is built with the same compiler that you use for chemfiles. It is possible to use different compilers, but it is not recommended.
+ChemFiles currently builds with GNU, Clang and Intel C/C++ compilers on POSIX systems and Visual C++ on Windows systems. So it is recommended that water-order is built with the same compiler that you use for chemfiles. It is possible to use different compilers, but it is not recommended. Also make sure that C++ exception handling is enabled.
+
+If you wish to modify the build process, look at the shell or batch install scripts that have been provided. The build process is not long or complicated, and there are detailed instructions for building chemfiles that is available on their webpages. Compiling water-order is just compiling the source file and linking with the chemfiles library.
 
 ### For Linux or Mac OS X (Or other Unix-like systems)
 
@@ -14,5 +16,4 @@ Again, chemfiles can be built as a dynamic library (DLL). In that case you still
 
 On Windows, there are multiple versions of C runtimes (static, dynamic, debug etc.). Make sure that chemfiles is build against the same runtime. For the release build of chemfiles, the dynamic multithreaded (/MD) runtime is linked to. When linking to the chemfiles library, also use the /MD flag (you will get linker errors or runtime errors if you try otherwise).
 
-Water_order should also compile with other compilers, the only thing to make sure is that chemfiles is built with the same compiler, and that C++ exception handling is enabled.
-
+Note that as of now, chemfiles cannot be built with Intel Classic C/C++ or Intel LLVM C/C++ on Windows, so Visual C/C++ is the only compiler that is usable here. You can try the clang-cl provided by Visual Studio and see if it works.
