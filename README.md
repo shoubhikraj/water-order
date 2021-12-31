@@ -1,3 +1,5 @@
+![GitHub All Releases](https://img.shields.io/github/downloads/shoubhikraj/water-order/total)
+
 # Water-order : A fast C++ code to calculate order parameters for water droplets
 
 **(Currently an alpha version, the code is being tested)**
